@@ -1,0 +1,78 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 9,
+			"minor" : 0,
+			"revision" : 0,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "jit.gen",
+		"rect" : [ 576.0, 234.0, 904.0, 751.0 ],
+		"bglocked" : 0,
+		"openinpresentation" : 0,
+		"default_fontsize" : 12.0,
+		"default_fontface" : 0,
+		"default_fontname" : "Arial",
+		"gridonopen" : 1,
+		"gridsize" : [ 15.0, 15.0 ],
+		"gridsnaponopen" : 1,
+		"objectsnaponopen" : 1,
+		"statusbarvisible" : 2,
+		"toolbarvisible" : 1,
+		"lefttoolbarpinned" : 0,
+		"toptoolbarpinned" : 0,
+		"righttoolbarpinned" : 0,
+		"bottomtoolbarpinned" : 0,
+		"toolbars_unpinned_last_save" : 0,
+		"tallnewobj" : 0,
+		"boxanimatetime" : 200,
+		"enablehscroll" : 1,
+		"enablevscroll" : 1,
+		"devicewidth" : 0.0,
+		"description" : "",
+		"digest" : "",
+		"tags" : "",
+		"style" : "",
+		"subpatcher_template" : "",
+		"assistshowspatchername" : 0,
+		"boxes" : [ 			{
+				"box" : 				{
+					"code" : "add_chessboard(a){\r\n\tres = a;\r\n\tc = cell - dim*0.5;\r\n\trepetition = c*16/max(dim.x, dim.y);\r\n\tk = floor(repetition);\r\n\tchess = ((k.x + k.y) % 2) == 0 ? 0.3 : 0.4;\r\n\tk = floor(4*repetition);\r\n\tchess += ((k.x + k.y) % 2) == 0 ? 0.0 : 0.04;\r\n\tres *= vec(chess, chess, chess);\r\n\twidth = 0.994;\r\n\tline = max(0.0, cos(repetition.x*twopi) - width);\r\n\tline = max(line, cos(repetition.y*twopi) - width);\r\n\tline /= 1 - width;\r\n\tline = 1 - line;\r\n\tres *= vec(line, line, line);\r\n\treturn res;\r\n\t\r\n}\r\n\r\nadd_diagonal(a){\r\n\tres = a;\n\tdiag0 = max(1 - abs(snorm.x - snorm.y)/0.005, 0.0);\n\tdiag1 = max(1 - abs(snorm.x + snorm.y)/0.005, 0.0);\n\treturn mix(res, vec(0,1,1), 0.5 * max(diag0, diag1));\n}\r\n\r\nadd_circle(a, radius){\n\tres = a;\n\tdist = abs(radius - 0.996);\n\treturn mix( res, vec(1,1,0), 0.5 * clamp( 1 - dist/0.004, 0.0, 1.1 ) );\n}\r\n\r\nadd_rgb_ycm(a, snormRatio, radius){\r\n\tres = a;\n\tif(radius < 0.45 && abs(snormRatio.y) >= 0.2){\r\n\t\tk = floor(0.5*snormRatio.x*16);\n\n\t\tif(snormRatio.y < 0){\n\t\t\tres = k == -2 ? vec(1,0,0) : res;\n\t\t\tres = k == -1 ? vec(0,1,0) : res;\n\t\t\tres = k == 0 ? vec(0,0,1) : res;\n\t\t\tres = k == 1 ? vec(1,1,1) : res;\t\t\n\t\t} else {\n\t\t\tres = k == -2 ? vec(1,1,0) : res;\n\t\t\tres = k == -1 ? vec(0,1,1) : res;\n\t\t\tres = k == 0 ? vec(1,0,1) : res;\n\t\t\tres = k == 1 ? vec(0,0,0) : res;\t\t\t\n\t\t}\t\t\r\n\t}\r\n\treturn res;\n}\r\n\r\nadd_hue_circle(a, snormRatio, radius){\n\r\n\tres = a;\n\tangle = 0.5*atan2(snormRatio.x,snormRatio.y)/pi;\n\twheel_col = hsl2rgb(vec(angle, 1, 0.5));\n\tdist = smoothstep(0.0, 1.1, 20*(1 - abs(radius - 0.5)/0.08));\n\treturn mix(res, wheel_col, dist);\n}\r\n\r\nadd_gradient(a, snormRatio, spectRatio){\n\tres = a;\n\tif(abs(snormRatio.x) <= 4.0/16 && abs(snormRatio.y - 0.6666) <= (1.001/16)){\r\n\t\tcol = snormRatio.x / (4.0/16)*0.5 + 0.5;\r\n\t\tres = vec(col, col, col);\t\r\n\t}\n\treturn res;\n}\r\n\r\nrotate2D(p, c, s){ \r\n\treturn vec( dot(vec(c, s), p), dot(vec(-s, c), p)); \r\n}\n\t\nSDFbox(p, b){\n    d = abs(p)-b;\n    return length(max(d,0.0)) + min(max(d.x,d.y),0.0);\n}\n\t\nSDFpie(p, c, r){\n    q = vec(abs(p.x), p.y);\n    l = length(q) - r;\n    m = length(q-c*clamp(dot(q,c),0.0,r)); // c=sin/cos of aperture\n    return max(l,m*sign(c.y*q.x-c.x*q.y));\n}\r\n\r\nadd_logo(a, pos, aspectRatio){\n\tres = a;\r\n\tp = pos;\n\tp *= vec(1,-1);\n\tp *= 8;\n\tp += vec(1.63, -0.17);//aspectRatio*0.9;\n\tc = vec(0.7071067812, 0.7071067812);//cos(halfpi*0.5);\n\t\n\td0 = SDFpie(rotate2D(p, 0.7071067812, -0.7071067812), c, 0.5);\n\td1 = SDFpie(rotate2D(p - vec(0.5, 0.), -0.7071067812, 0.7071067812) , c, 0.5);\n\td2 = SDFpie(rotate2D(p - vec(1., 0.5), -0.7071067812, 0.7071067812) , c, 0.5);\n\td3 = SDFpie(rotate2D(p - vec(1., 0.), 0.7071067812, -0.7071067812) , c, 0.5);\n\td4 = SDFbox(p - vec(1.25, -0.33), vec(0.25, 0.17));\n\td5 = SDFpie(rotate2D(p - vec(1., -0.5), -0.7071067812, -0.7071067812) , c, 0.5);\n\td6 = SDFbox(p - vec(2, -0.2), vec(0.25, 0.20));\n\td7 = SDFpie(rotate2D(p - vec(1.75, -0.), 0.7071067812, -0.7071067812) , c, 0.5);\n\td8 = SDFbox(p - vec(2.75, -0.25), vec(0.25, 0.25));\n\td9 = SDFpie(rotate2D(p - vec(2.5, -0.5), -0.7071067812, -0.7071067812) , c, 0.5);\n\td10 = SDFpie(rotate2D(p - vec(3, 0.),0.7071067812, 0.7071067812) , c, 0.5);\n\t\n\td = d0;\n\td = min(d, d1);\n\td = min(d, d2);\n\td = min(d, d3);\n\td = min(d, d4);\n\td = min(d, d5);\n\td = min(d, d6);\n\td = min(d, d7);\n\td = min(d, d8);\n\td = min(d, d9);\n\td = min(d, d10);\n\tres = d < 0 ? mix(res, vec(0,1,1), 0.5) : res;\n\treturn res;\n}\r\n\r\norient = dim.x >= dim.y;\r\naspectRatio = orient == 1 ? dim.x/dim.y : dim.y/dim.x;\r\nc = cell;\r\nmodc = floor( c*16 % vec( max(dim.x, dim.y), max(dim.x, dim.y) ) );\r\nscale = orient == 1 ? vec(aspectRatio, 1) : vec(1, aspectRatio);\r\nsnormRatio = snorm * scale;\r\nradius = length(snormRatio);\r\n\r\nres = vec(1,1,1);\r\n\r\nres = add_chessboard(res);\r\nres = add_diagonal(res);\r\nres = add_circle(res, radius);\r\nres = add_rgb_ycm(res, snormRatio, radius);\r\nres = add_hue_circle(res, snormRatio, radius);\r\nres = add_gradient(res, snormRatio, aspectRatio);\r\nres = add_logo(res, snormRatio, aspectRatio);\r\n\r\nout1 = vec(1, res.x, res.y, res.z);",
+					"fontface" : 0,
+					"fontname" : "<Monospaced>",
+					"fontsize" : 12.0,
+					"id" : "obj-5",
+					"maxclass" : "codebox",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 37.0, 15.0, 740.0, 682.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-4",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 37.0, 723.0, 35.0, 22.0 ],
+					"text" : "out 1"
+				}
+
+			}
+ ],
+		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-4", 0 ],
+					"source" : [ "obj-5", 0 ]
+				}
+
+			}
+ ]
+	}
+
+}

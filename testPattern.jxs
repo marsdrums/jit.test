@@ -136,7 +136,7 @@ void add_hue_circle(inout vec3 res, in vec2 snormRatio, in float radius){
 	float angle = 0.5*atan(snormRatio.x, snormRatio.y) / PI;
 	float angle_time = fract(global_time*0.25) - 0.5;
 	vec3 wheel_col = hsl2rgb(angle, 1, 0.5);
-	wheel_col = mix(wheel_col*0.2, wheel_col, clamp( min( 1 - abs(angle - angle_time), abs(angle - angle_time))/0.002, 0.0, 1.1 ) );
+	wheel_col = mix(wheel_col*0.2, wheel_col, clamp( min( 1 - abs(angle - angle_time), abs(angle - angle_time))/0.003, 0.0, 1.1 ) );
 	float dist = smoothstep(0.0, 1.1, 20*(1 - abs(radius - 0.5)/0.08));
 	res = mix(res, wheel_col, dist);
 }
