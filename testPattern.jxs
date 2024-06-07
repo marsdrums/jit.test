@@ -9,6 +9,8 @@
 	<param name="delta_time" type="float" state="DELTA_TIME" />
 	<param name="letters" type="int" default="1" />
 	<param name="global_time" type="float" state="TIME" />
+	<param name="show_g" type="int" default="1" />
+	<param name="show_c" type="int" default="1" />
 	<language name="glsl" version="1.5">
 		<bind param="tex" program="fp" />
 		<bind param="texDim" program="fp" />
@@ -20,6 +22,8 @@
 		<bind param="delta_time" program="fp" />
 		<bind param="letters" program="fp" />
 		<bind param="global_time" program="fp" />
+		<bind param="show_g" program="fp" />
+		<bind param="show_c" program="fp" />
 		<program name="vp" type="vertex"  >
 <![CDATA[
 #version 330 core
@@ -64,6 +68,7 @@ uniform sampler2DRect tex;
 uniform vec2 texDim;
 uniform float delta_time, global_time;
 uniform sampler2D letters;
+uniform int show_g, show_c;
 
 // Helper function to convert hue to RGB
 float hue2rgb(float p, float q, float t) {
@@ -247,12 +252,17 @@ void main(void) {
 
 	vec3 res = vec3(1);
 
-	add_chessboard(res, c);
-	add_diagonal(res, snorm);
-	add_circle(res, radius);
-	add_rgb_ycm(res, snormRatio, radius);
-	add_hue_circle(res, snormRatio, radius);
-	add_gradient(res, snormRatio, aspectRatio);
+	if(show_g == 1){
+		add_chessboard(res, c);
+		add_diagonal(res, snorm);
+		add_circle(res, radius);		
+	}
+	if(show_c == 1){
+		add_rgb_ycm(res, snormRatio, radius);
+		add_hue_circle(res, snormRatio, radius);
+		add_gradient(res, snormRatio, aspectRatio);		
+	}
+	
 	add_logo(res, snormRatio, aspectRatio);
 	add_cross(res, snormRatio, radius);
 	add_fps(res, normUV, normPos, aspectRatio);

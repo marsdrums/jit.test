@@ -106,10 +106,14 @@ var swapCallback = function(event) {
 
 var tex_out = 0;
 var size = [1920, 1080];
+var show_g = 1;
+var show_c = 1;
 
 var mat = new JitterMatrix(4, "float32", size);
 var jitgen = new JitterObject("jit.gen");
 jitgen.gen = "jit.test.genjit";
+jitgen.param("show_g", show_g);
+jitgen.param("show_c", show_c);
 jitgen.activeinput = 0;
 
 var tex = new JitterObject("jit.gl.texture", drawto);
@@ -121,6 +125,8 @@ var slab = new JitterObject("jit.gl.slab", drawto);
 slab.file = "testPattern.jxs";
 slab.type = "float32";
 slab.drawto = "ctx";
+slab.param("show_g", show_g);
+slab.param("show_c", show_c);
 slab.inputs = 2;
 
 var matLetters = new JitterMatrix(4, "char", 1000, 100);
@@ -140,6 +146,20 @@ function dim(){
 
 function output_texture(){
 	tex_out = arguments[0];
+}
+
+function show_grid(){
+	show_g = arguments[0];
+	jitgen.param("show_g", show_g);
+	slab.param("show_g", show_g);
+	//if(tex_out == 0) bang();
+}
+
+function show_palette(){
+	show_c = arguments[0];
+	jitgen.param("show_c",show_c);
+	slab.param("show_c", show_c);
+	//if(tex_out == 0) bang();
 }
 
 function bang(){
